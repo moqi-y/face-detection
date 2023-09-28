@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="http://192.168.2.23:8081/dist/face-api.min.js"></script>
+    <!-- 
+        face-api可以放在自己的服务器上使用url引入加载，例如：
+        <script src="http://127.0.0.1:8081/face-api.min.js"></script>
+     -->
+    <script src="./dist/face-api.min.js"></script>
     <style>
         #image {
             width: 500px;
@@ -89,10 +93,11 @@
 
 
         async function loadModel() {
-            await faceapi.nets.ssdMobilenetv1.load('http://192.168.2.23:8081/weights');
+            // 模型权重文件也可以放在服务器上，使用url调用，例如 http://127.0.0.1:8081/weights 但要注意CORS跨域问题
+            await faceapi.nets.ssdMobilenetv1.load('./weights');
             // await faceapi.nets.tinyFaceDetector.load('./weights/tiny');
             // await faceapi.nets.mtcnn.load('./weights/mtcnn');
-            await faceapi.loadFaceLandmarkModel('http://192.168.2.23:8081/weights/face_landmark');
+            await faceapi.loadFaceLandmarkModel('./weights/face_landmark');
             // await faceapi.loadFaceLandmarkTinyModel('./weights/face_landmark');
             // await faceapi.loadMtcnnModel('./weights/mtcnn');
         }
