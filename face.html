@@ -31,7 +31,7 @@
 <body>
     <button id="btn">start</button>
     <video src="" id="video" width="500" height="300"></video>
-    <img id="image" src="./xxx.jpg" alt="">
+    <img id="image" src="./R.jpg" alt="">
     <canvas id="canvas" width="500" height="300"></canvas>
     <script>
         const video = document.getElementById('video');
@@ -40,8 +40,8 @@
         const btn = document.getElementById('btn');
         const cxt = canvas.getContext('2d');
         const img = new Image()
-        img.src = './moj.png';
-        console.log(img);
+        img.src = './R.jpg';
+        console.log("img:",img);
         // img.onload = drawImage
         // function drawImage(point) {
         //     return () => {
@@ -108,7 +108,7 @@
             const detections = await faceapi.detectAllFaces(input, new faceapi.SsdMobilenetv1Options())
                 .withFaceLandmarks();
 
-            console.log(detections);
+            console.log("detections:",detections);
 
             if (detections && detections.length && detections[0].landmarks && detections[0].landmarks.positions &&
                 detections[0].landmarks.positions.length) {
@@ -134,7 +134,7 @@
         // getFace();
 
         function drawPoint(point, index, width) {
-            console.log(point.x, point.y);
+            console.log("绘制点:",point.x, point.y);
             // 绘制点
             // cxt.beginPath();
             // cxt.arc(point.x, point.y, 5, 0, Math.PI * 2, true);
