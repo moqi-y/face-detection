@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸识别</title>
+    <!-- 
+        face-api可以放在自己的服务器上使用url引入加载，例如：
+        <script src="http://127.0.0.1:8081/face-api.min.js"></script>
+     -->
+    <script src="./dist/face-api.js"></script>
+    <style>
+        #image {
+            width: 500px;
+            height: auto;
+            position: absolute;
+            left: 100px;
+            top: 100px;
+        }
+
+        #btn {
+            width: 90px;
+            height: 40px;
+            border-radius: 5px;
+            background: #40a3ef;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #canvas,
+        #video {
+            position: absolute;
+            left: 100px;
+            top: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <input id="input" type="file" />
+    <button id="btn">开始检测</button>
+    <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3;">
+        您的浏览器不支持canvas
+    </canvas>
+
+    <script>
+        const image = document.getElementById('image');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const btn = document.getElementById('btn');
+
+        const input = document.getElementById('input')
+        // 窗口加载触发
+        window.onload = function () {
+            // 将图片绘制到canvas
+            drawImage()
+            btn.onclick = function () {
+                loadModel()
+            }
+            input.onchange = function (e) {
+                let file = e.target.files[0]
+                let imgurl = URL.createObjectURL(file); // 创建文件的URL 
+                drawImage(imgurl)
+            }
+        }
+
+        // 将图片绘制到canvas
+        function drawImage(imgUrl) {
+            var img = new Image();
+            img.onload = function () {
+                ctx.drawImage(img, 0, 0, 350, 500);
+            }
+            img.src = imgUrl; // 替换为你的图片源  
+        }
+
+        // 绘制识别框的方法
+        function drawRect(x, y, width, height, color, weight) {
+            ctx.strokeStyle = color
+            ctx.lineWidth = weight
+            ctx.strokeRect(x, y, width, height)
+        }
+
+        // 绘制文本
+        function drawText(text, x, y, fontSize) {
+            ctx.font = fontSize + " " + "Arial";
+            ctx.strokeText(text, x, y)
+        }
+
+        // 置信度处理
+        function financial(x) {
+            return Number.parseFloat(x).toFixed(4);
+        }
+
+        async function loadModel(params) {
+            // 加载模型,模型的Json和shard文件必须位于同一目录
+            await faceapi.loadSsdMobilenetv1Model('./weights/')
+            // 全局神经网络实例
+            console.log(faceapi.nets)
+            // 检测图像中的所有人脸
+            const detections = await faceapi.detectAllFaces(canvas)
+            console.log("detections", detections);
+            if (detections.length == 0) {
+                alert("当前图片未检测到人脸")
+            }
+
+            // 判断是否检测到多张人脸
+            if (detections.length > 1) {
+                for (let index = 0; index < detections.length; index++) {
+                    const item = detections[index];
+                    drawRect(item._box._x, item._box._y, item._box._width, item._box._height, "orange", 2)
+                    drawText(`置信度:${financial(item._score)}`, item._box._x + 1, item._box._y - 5, "20px")
+                }
+            }
+            else {
+                // 检测图像中置信度得分最高的人脸
+                const detection = await faceapi.detectSingleFace(canvas)
+                console.log("detection", detection);
+                console.log(`置信度得分：${detection._score}`);
+                drawRect(detection._box._x, detection._box._y, detection._box._width, detection._box._height, "red", 2)
+                drawText(`置信度:${financial(detection._score)}`, detection._box._x + 1, detection._box._y - 5, "20px")
+            }
+
+        }
+
+
+
+
+
+    </script>
+</body>
+
+</html>
