@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸识别</title>
+    <!-- 
+        face-api可以放在自己的服务器上使用url引入加载，例如：
+        <script src="http://127.0.0.1:8081/face-api.min.js"></script>
+     -->
+    <script src="./dist/face-api.js"></script>
+    <style>
+        video {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #btn {
+            width: 90px;
+            height: 40px;
+            border-radius: 5px;
+            background: #40a3ef;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="btn">开始检测</button>
+    <!-- 隐藏视频video播放，只显示canvas绘制的 -->
+    <video id="video" autoplay style="display: none;"></video>
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script async>
+        const video = document.getElementById('video');
+        const btn = document.getElementById('btn');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d')
+
+        btn.onclick = function () {
+            openCamera()
+        }
+
+        async function openCamera(params) {
+            // 加载模型,模型的Json和shard文件必须位于同一目录
+            await faceapi.loadSsdMobilenetv1Model('./weights/')
+
+            // 开启摄像头
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.play();
+                        // 使用requestAnimationFrame()函数不断更新canvas
+                        drawVideoToCanvas();
+                    })
+                    .catch(function (error) {
+                        console.error('无法访问摄像头', error);
+                    });
+            } else if (navigator.getUserMedia) { // 兼容旧版浏览器
+                navigator.getUserMedia({ video: true },
+                    function (stream) {
+                        video.srcObject = stream;
+                        // 使用requestAnimationFrame()函数不断更新canvas
+                        drawVideoToCanvas();
+                    },
+                    function (err) {
+                        console.error('无法访问摄像头', err);
+                    }
+                );
+            } else if (navigator.webkitGetUserMedia) { // Chrome/Safari/Opera
+                navigator.webkitGetUserMedia({ video: true },
+                    function (stream) {
+                        video.srcObject = stream;
+                        // 使用requestAnimationFrame()函数不断更新canvas
+                        drawVideoToCanvas();
+                    },
+                    function (err) {
+                        console.error('无法访问摄像头', err);
+                    }
+                );
+            } else if (navigator.mozGetUserMedia) { // Firefox
+                navigator.mozGetUserMedia({ video: true },
+                    function (stream) {
+                        video.srcObject = stream;
+                        // 使用requestAnimationFrame()函数不断更新canvas
+                        drawVideoToCanvas();
+                    },
+                    function (err) {
+                        console.error('无法访问摄像头', err);
+                    }
+                );
+            } else {
+                alert('您的浏览器不支持访问摄像头');
+            }
+        }
+
+        // 将视频流设置为canvas的背景,利用回调实现
+        function drawVideoToCanvas() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            cetectFace()
+            setTimeout(() => {
+                requestAnimationFrame(drawVideoToCanvas);
+            }, 200);
+        }
+
+
+        // 绘制识别框的方法
+        function drawRect(x, y, width, height, color, weight) {
+            ctx.strokeStyle = color
+            ctx.lineWidth = weight
+            ctx.strokeRect(x, y, width, height)
+        }
+
+        // 绘制文本
+        function drawText(text, x, y, fontSize) {
+            ctx.font = fontSize + " " + "Verdana";
+            ctx.strokeText(text, x, y)
+        }
+
+        // 置信度处理
+        function financial(x) {
+            return Number.parseFloat(x).toFixed(4);
+        }
+
+        // 在canvas上绘制红色方框
+        function drawRectangle(x, y, width, height) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(x, y, width, height);
+        }
+
+        async function cetectFace() {
+            // 检测图像中的所有人脸
+            const detections = await faceapi.detectAllFaces(canvas)
+            console.log("detections", detections);
+            for (let index = 0; index < detections.length; index++) {
+                const item = detections[index];
+                console.log("item", item);
+                drawRect(item._box._x, item._box._y, item._box._width, item._box._height, "red", 3)
+                drawText(`置信度:${financial(item._score)}`, item._box._x + 1, item._box._y - 5, "20px")
+            }
+            // 检测图像中置信度得分最高的人脸
+            // const detection = await faceapi.detectSingleFace(canvas)
+            // console.log("detection", detection);
+            // console.log(`得分：${detection._score}`);
+            // console.log(detection._box._x, detection._box._y, detection._box._width, detection._box._height);
+            // drawRect(detection._box._x, detection._box._y, detection._box._width, detection._box._height, "red", 2)
+            // drawText(`置信度:${financial(detection._score)}`, detection._box._x + 1, detection._box._y - 5, "20px")
+        }
+    </script>
+
+</body>
+
+</html>
