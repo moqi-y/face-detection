@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../dist/face-api.js"></script>
+    <title>Document</title>
+    <style>
+        #image {
+            width: 400px;
+            height: 500px;
+        }
+
+        #canvas {
+            border: 2px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <img id="image" src="../R.jpg" />
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <button onclick="start()">开始</button>
+
+    <script>
+        // 获取元素
+        const image = document.getElementById('image')
+        const canvas = document.getElementById('canvas')
+        const ctx = canvas.getContext("2d")
+
+
+        async function start(params) {
+            await faceapi.loadSsdMobilenetv1Model('../weights/')
+            await faceapi.loadFaceLandmarkModel('../weights/face_landmark')
+            
+            const detections = await faceapi.detectAllFaces(image)
+            console.log("detections", detections);
+          
+            const detectionsForSize = faceapi.resizeResults(detections, { width: image.width, height: image.height })
+            console.log("detectionsForSize", detectionsForSize);
+            canvas.width = image.width
+            canvas.height = image.height
+            
+            faceapi.draw.drawDetections(canvas, detectionsForSize, { withScore: true })
+ 
+        }
+
+    </script>
+</body>
+
+</html>
