@@ -28,6 +28,20 @@
             cursor: pointer;
             font-size: 16px;
         }
+        .btn-area{
+            margin: 5px 10px;
+            border: 2px solid #ccc;
+        }
+        .btn-area > button{
+            padding: 10px;
+            border-radius: 5px;
+            background: #40a3ef;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 8px;
+            margin-right: 5px;
+        }
 
         #canvas,
         #video {
@@ -44,6 +58,10 @@
         您的浏览器不支持canvas
     </canvas>
 
+    <div class="btn-area">
+        <span style="color: orange;"><b>其他示例：</b></span>
+        <button><a href="./input-face.html">自定义图片检测示例</a></button>
+    </div>
     <script>
         const image = document.getElementById('image');
         const canvas = document.getElementById('canvas');
